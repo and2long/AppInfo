@@ -1,12 +1,10 @@
 package com.and2long.deleteapps
 
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
-import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
@@ -17,10 +15,8 @@ import android.view.View
 import com.zhy.adapter.recyclerview.MultiItemTypeAdapter
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.functions.Consumer
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
-import java.util.concurrent.Callable
 
 
 class MainActivity : AppCompatActivity() {
@@ -44,16 +40,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onItemClick(view: View?, holder: RecyclerView.ViewHolder?, position: Int) {
-                AlertDialog.Builder(this@MainActivity)
-                        .setMessage(getString(R.string.sure_to_delete))
-                        .setPositiveButton(getString(R.string.ok), DialogInterface.OnClickListener({ dialog, which ->
-                            dialog.dismiss()
-                            deleteApp(mData[position].appPackage)
-                        }))
-                        .setNegativeButton(getString(R.string.cancel), DialogInterface.OnClickListener({ dialog, which ->
-                            dialog.dismiss()
-                        }))
-                        .show()
+                deleteApp(mData[position].appPackage)
             }
         })
 
@@ -87,51 +74,45 @@ class MainActivity : AppCompatActivity() {
      */
     private fun showAllUserApps() {
         pb.visibility = View.VISIBLE
-        Observable.fromCallable(object : Callable<MutableList<AppInfo>> {
-            override fun call(): MutableList<AppInfo> {
-                val myAppInfos = mutableListOf<AppInfo>()
-                try {
-                    val packageInfos = packageManager.getInstalledPackages(0)
-                    for (i in packageInfos.indices) {
-                        val packageInfo = packageInfos[i]
-                        //过滤掉系统app
-                        if ((ApplicationInfo.FLAG_SYSTEM and packageInfo.applicationInfo.flags) != 0) {
-                            continue
-                        }
-                        //过滤掉本程序
-                        if (packageInfo.packageName == packageName) {
-                            continue
-                        }
-                        val myAppInfo = AppInfo()
-                        myAppInfo.appName = packageManager.getApplicationLabel(packageInfo.applicationInfo).toString()
-                        myAppInfo.appPackage = packageInfo.packageName
-                        if (packageInfo.applicationInfo.loadIcon(packageManager) == null) {
-                            continue
-                        }
-                        myAppInfo.appIcon = packageInfo.applicationInfo.loadIcon(packageManager)
-                        myAppInfos.add(myAppInfo)
+        val disposable = Observable.fromCallable {
+            val myAppInfos = mutableListOf<AppInfo>()
+            try {
+                val packageInfos = packageManager.getInstalledPackages(0)
+                for (i in packageInfos.indices) {
+                    val packageInfo = packageInfos[i]
+                    //过滤掉系统app
+                    if ((ApplicationInfo.FLAG_SYSTEM and packageInfo.applicationInfo.flags) != 0) {
+                        continue
                     }
-                } catch (e: Exception) {
-                    println("===============获取应用包信息失败")
+                    //过滤掉本程序
+                    if (packageInfo.packageName == packageName) {
+                        continue
+                    }
+                    val myAppInfo = AppInfo()
+                    myAppInfo.appName = packageManager.getApplicationLabel(packageInfo.applicationInfo).toString()
+                    myAppInfo.appPackage = packageInfo.packageName
+                    if (packageInfo.applicationInfo.loadIcon(packageManager) == null) {
+                        continue
+                    }
+                    myAppInfo.appIcon = packageInfo.applicationInfo.loadIcon(packageManager)
+                    myAppInfos.add(myAppInfo)
                 }
-
-                return myAppInfos
+            } catch (e: Exception) {
+                println("===============获取应用包信息失败")
             }
-        }).subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(object : Consumer<MutableList<AppInfo>> {
-                    override fun accept(t: MutableList<AppInfo>) {
-                        mData.clear()
-                        mData.addAll(t)
-                        adapter.notifyDataSetChanged()
-                        pb.visibility = View.INVISIBLE
-                    }
-                }, object : Consumer<Throwable> {
-                    override fun accept(t: Throwable) {
-                        t.printStackTrace()
-                        pb.visibility = View.INVISIBLE
-                    }
-                })
+
+            myAppInfos
+        }.subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ t ->
+                mData.clear()
+                mData.addAll(t)
+                adapter.notifyDataSetChanged()
+                pb.visibility = View.INVISIBLE
+            }, { t ->
+                t.printStackTrace()
+                pb.visibility = View.INVISIBLE
+            })
     }
 
 
