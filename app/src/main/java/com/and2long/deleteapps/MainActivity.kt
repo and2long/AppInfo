@@ -1,5 +1,6 @@
 package com.and2long.deleteapps
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.net.Uri
@@ -9,6 +10,7 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.DividerItemDecoration
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -21,6 +23,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
+    private val TAG = "MainActivity"
 
     private lateinit var adapter: AppAdapter
     private val mData = mutableListOf<AppInfo>()
@@ -72,9 +75,10 @@ class MainActivity : AppCompatActivity() {
     /**
      * 显示所有的用户程序
      */
+    @SuppressLint("CheckResult")
     private fun showAllUserApps() {
         pb.visibility = View.VISIBLE
-        val disposable = Observable.fromCallable {
+        Observable.fromCallable {
             val myAppInfos = mutableListOf<AppInfo>()
             try {
                 val packageInfos = packageManager.getInstalledPackages(0)
@@ -98,21 +102,22 @@ class MainActivity : AppCompatActivity() {
                     myAppInfos.add(myAppInfo)
                 }
             } catch (e: Exception) {
-                println("===============获取应用包信息失败")
+                e.printStackTrace()
+                Log.e(TAG, "获取应用包信息失败")
             }
 
             myAppInfos
         }.subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ t ->
-                mData.clear()
-                mData.addAll(t)
-                adapter.notifyDataSetChanged()
-                pb.visibility = View.INVISIBLE
-            }, { t ->
-                t.printStackTrace()
-                pb.visibility = View.INVISIBLE
-            })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe({ t ->
+                    mData.clear()
+                    mData.addAll(t)
+                    adapter.notifyDataSetChanged()
+                    pb.visibility = View.INVISIBLE
+                }, { t ->
+                    t.printStackTrace()
+                    pb.visibility = View.INVISIBLE
+                })
     }
 
 

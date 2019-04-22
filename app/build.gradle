@@ -26,12 +26,6 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    applicationVariants.all { variant ->
-        variant.outputs.all { output ->
-            outputFileName = output.outputFile.name
-                    .replace("app", "${defaultConfig.applicationId}_${defaultConfig.versionName}")
-        }
-    }
 }
 
 dependencies {
@@ -46,7 +40,7 @@ dependencies {
     implementation 'com.zhy:base-rvadapter:3.0.3'
     //rx
     implementation 'io.reactivex.rxjava2:rxandroid:2.0.2'
-    implementation 'io.reactivex.rxjava2:rxjava:2.1.14'
+    implementation 'io.reactivex.rxjava2:rxjava:2.2.0'
 }
 repositories {
     mavenCentral()
