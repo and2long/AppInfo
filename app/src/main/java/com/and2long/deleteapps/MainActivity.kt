@@ -6,14 +6,12 @@ import android.content.pm.ApplicationInfo
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.DividerItemDecoration
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.RecyclerView
 import com.zhy.adapter.recyclerview.MultiItemTypeAdapter
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -34,9 +32,8 @@ class MainActivity : AppCompatActivity() {
 
         adapter = AppAdapter(this, mData)
 
-        app_list.layoutManager = LinearLayoutManager(this)
         app_list.adapter = adapter
-        app_list.addItemDecoration(DividerItemDecoration(this, RecyclerView.VERTICAL))
+        app_list.addItemDecoration(androidx.recyclerview.widget.DividerItemDecoration(this, RecyclerView.VERTICAL))
         adapter.setOnItemClickListener(object : MultiItemTypeAdapter.OnItemClickListener {
             override fun onItemLongClick(view: View?, holder: RecyclerView.ViewHolder?, position: Int): Boolean {
                 return false
@@ -95,6 +92,7 @@ class MainActivity : AppCompatActivity() {
                     val myAppInfo = AppInfo()
                     myAppInfo.appName = packageManager.getApplicationLabel(packageInfo.applicationInfo).toString()
                     myAppInfo.appPackage = packageInfo.packageName
+                    myAppInfo.verName = packageInfo.versionName
                     if (packageInfo.applicationInfo.loadIcon(packageManager) == null) {
                         continue
                     }

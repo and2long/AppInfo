@@ -22,5 +22,6 @@ public class AppAdapter extends CommonAdapter<AppInfo> {
         holder.setImageDrawable(R.id.iv_icon, appInfo.getAppIcon());
         holder.setText(R.id.tv_name, appInfo.getAppName());
         holder.setText(R.id.tv_package, appInfo.getAppPackage());
+        holder.setText(R.id.tv_ver_name, appInfo.getVerName());
     }
 }
