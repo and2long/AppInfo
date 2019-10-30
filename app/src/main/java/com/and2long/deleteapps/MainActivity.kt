@@ -103,7 +103,7 @@ class MainActivity : AppCompatActivity() {
                 e.printStackTrace()
                 Log.e(TAG, "获取应用包信息失败")
             }
-
+            myAppInfos.sortBy { it.appName }
             myAppInfos
         }.subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
