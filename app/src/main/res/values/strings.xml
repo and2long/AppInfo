@@ -1,4 +1,4 @@
 <resources>
-    <string name="app_name">AppInfo</string>
+    <string name="app_name">AppList</string>
     <string name="refresh">刷新</string>
 </resources>

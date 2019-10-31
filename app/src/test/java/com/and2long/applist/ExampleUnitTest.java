@@ -1,4 +1,4 @@
-package com.and2long.appinfo;
+package com.and2long.applist;
 
 import org.junit.Test;
 

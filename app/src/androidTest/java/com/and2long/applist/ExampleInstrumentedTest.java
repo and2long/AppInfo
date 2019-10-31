@@ -1,4 +1,4 @@
-package com.and2long.appinfo;
+package com.and2long.applist;
 
 import android.content.Context;
 import androidx.test.platform.app.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getContext();
 
-        assertEquals("com.and2long.appinfo", appContext.getPackageName());
+        assertEquals("com.and2long.applist", appContext.getPackageName());
     }
 }
