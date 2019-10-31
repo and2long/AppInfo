@@ -115,12 +115,14 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
                 }
 
                 temp.forEach {
-                    val myAppInfo = AppInfo()
-                    myAppInfo.appName = packageManager.getApplicationLabel(it.applicationInfo).toString()
-                    myAppInfo.appPackage = it.packageName
-                    myAppInfo.verName = it.versionName
-                    myAppInfo.appIcon = it.applicationInfo.loadIcon(packageManager)
-                    result.add(myAppInfo)
+                    if (it.packageName != packageName) {
+                        val myAppInfo = AppInfo()
+                        myAppInfo.appName = packageManager.getApplicationLabel(it.applicationInfo).toString()
+                        myAppInfo.appPackage = it.packageName
+                        myAppInfo.verName = it.versionName
+                        myAppInfo.appIcon = it.applicationInfo.loadIcon(packageManager)
+                        result.add(myAppInfo)
+                    }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
