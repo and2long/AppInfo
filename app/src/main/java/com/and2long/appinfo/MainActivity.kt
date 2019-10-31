@@ -1,4 +1,4 @@
-package com.and2long.deleteapps
+package com.and2long.appinfo
 
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -10,6 +10,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.AdapterView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.zhy.adapter.recyclerview.MultiItemTypeAdapter
@@ -17,19 +18,33 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
+import android.widget.ArrayAdapter
 
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
 
-    private val TAG = "MainActivity"
+    companion object {
+        const val TYPE_ALL = 0
+        const val TYPE_USER = 1
+        const val TYPE_SYSTEM = 2
+    }
+
+    private val TAG = this.javaClass.simpleName
 
     private lateinit var adapter: AppAdapter
     private val mData = mutableListOf<AppInfo>()
 
+    private var type = TYPE_ALL
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
+        toolBar.title = ""
+        setSupportActionBar(toolBar)
+        val spinnerAdapter = ArrayAdapter.createFromResource(this,
+                R.array.options_main, android.R.layout.simple_spinner_dropdown_item)
+        spinner.adapter = spinnerAdapter
+        spinner.onItemSelectedListener = this
         adapter = AppAdapter(this, mData)
 
         app_list.adapter = adapter
@@ -45,13 +60,11 @@ class MainActivity : AppCompatActivity() {
         })
 
         pb.visibility = View.GONE
-
-        showAllUserApps()
     }
 
     override fun onResume() {
         super.onResume()
-        showAllUserApps()
+        showApps()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -62,49 +75,59 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         if (item != null) {
             when (item.itemId) {
-                R.id.i_refresh -> showAllUserApps()
+                R.id.i_refresh -> showApps()
             }
         }
         return super.onOptionsItemSelected(item)
     }
 
 
+    override fun onNothingSelected(parent: AdapterView<*>?) {
+        Log.i(TAG, "nothing select")
+    }
+
+    override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+        type = position
+        showApps()
+        Log.i(TAG, "$position")
+    }
+
     /**
      * 显示所有的用户程序
      */
     @SuppressLint("CheckResult")
-    private fun showAllUserApps() {
+    private fun showApps() {
         pb.visibility = View.VISIBLE
         Observable.fromCallable {
-            val myAppInfos = mutableListOf<AppInfo>()
+            val result = mutableListOf<AppInfo>()
             try {
-                val packageInfos = packageManager.getInstalledPackages(0)
-                for (i in packageInfos.indices) {
-                    val packageInfo = packageInfos[i]
-                    //过滤掉系统app
-                    if ((ApplicationInfo.FLAG_SYSTEM and packageInfo.applicationInfo.flags) != 0) {
-                        continue
+                val packageInfoList = packageManager.getInstalledPackages(0)
+                val temp = when (type) {
+                    TYPE_SYSTEM -> {
+                        packageInfoList.filter { (ApplicationInfo.FLAG_SYSTEM and it.applicationInfo.flags) != 0 }
                     }
-                    //过滤掉本程序
-                    if (packageInfo.packageName == packageName) {
-                        continue
+                    TYPE_USER -> {
+                        packageInfoList.filter { (ApplicationInfo.FLAG_SYSTEM and it.applicationInfo.flags) == 0 }
                     }
+                    else -> {
+                        packageInfoList
+                    }
+                }
+
+                temp.forEach {
                     val myAppInfo = AppInfo()
-                    myAppInfo.appName = packageManager.getApplicationLabel(packageInfo.applicationInfo).toString()
-                    myAppInfo.appPackage = packageInfo.packageName
-                    myAppInfo.verName = packageInfo.versionName
-                    if (packageInfo.applicationInfo.loadIcon(packageManager) == null) {
-                        continue
-                    }
-                    myAppInfo.appIcon = packageInfo.applicationInfo.loadIcon(packageManager)
-                    myAppInfos.add(myAppInfo)
+                    myAppInfo.appName = packageManager.getApplicationLabel(it.applicationInfo).toString()
+                    myAppInfo.appPackage = it.packageName
+                    myAppInfo.verName = it.versionName
+                    myAppInfo.appIcon = it.applicationInfo.loadIcon(packageManager)
+                    result.add(myAppInfo)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
                 Log.e(TAG, "获取应用包信息失败")
             }
-            myAppInfos.sortBy { it.appName }
-            myAppInfos
+            result.sortBy { it.appName }
+            result
         }.subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe({ t ->

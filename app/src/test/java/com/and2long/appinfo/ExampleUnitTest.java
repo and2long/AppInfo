@@ -1,4 +1,4 @@
-package com.and2long.deleteapps;
+package com.and2long.appinfo;
 
 import org.junit.Test;
 
