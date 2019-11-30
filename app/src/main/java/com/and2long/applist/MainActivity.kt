@@ -3,6 +3,8 @@ package com.and2long.applist
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.ApplicationInfo
+import android.graphics.Color
+import android.graphics.ColorFilter
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
@@ -24,9 +26,8 @@ import android.widget.ArrayAdapter
 class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
 
     companion object {
-        const val TYPE_ALL = 0
-        const val TYPE_USER = 1
-        const val TYPE_SYSTEM = 2
+        const val TYPE_USER = 0
+        const val TYPE_SYSTEM = 1
     }
 
     private val TAG = this.javaClass.simpleName
@@ -34,7 +35,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
     private lateinit var adapter: AppAdapter
     private val mData = mutableListOf<AppInfo>()
 
-    private var type = TYPE_ALL
+    private var type = TYPE_USER
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -78,7 +79,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
                 R.id.i_refresh -> showApps()
             }
         }
-        return super.onOptionsItemSelected(item)
+        return true
     }
 
 

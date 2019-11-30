@@ -10,7 +10,7 @@
         android:id="@+id/toolBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/colorPrimary"
+        android:background="@android:color/white"
         android:elevation="4dp"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -18,7 +18,8 @@
             android:id="@+id/spinner"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:entries="@array/options_main" />
+            android:entries="@array/options_main"
+            android:spinnerMode="dropdown" />
     </androidx.appcompat.widget.Toolbar>
 
     <androidx.recyclerview.widget.RecyclerView
