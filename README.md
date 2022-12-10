@@ -1,2 +1,4 @@
-# 用户程序管理
-完全使用kotlin语言编写，展示用户程序列表，点击进入应用程序详情页，方便管理。
+# AppList
+✅ Developed use Kotlin.
+✅ List Apps and support to filter with User/System/All.
+✅ Click item to navigate to the App Setting Screen.
