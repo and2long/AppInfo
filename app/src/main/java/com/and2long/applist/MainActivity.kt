@@ -3,8 +3,6 @@ package com.and2long.applist
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.ApplicationInfo
-import android.graphics.Color
-import android.graphics.ColorFilter
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
@@ -13,17 +11,19 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.RecyclerView
-import com.zhy.adapter.recyclerview.MultiItemTypeAdapter
+import com.and2long.applist.databinding.ActivityMainBinding
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.activity_main.*
-import android.widget.ArrayAdapter
 
 
 class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
+
+    private lateinit var binding: ActivityMainBinding
 
     companion object {
         const val TYPE_USER = 0
@@ -32,35 +32,35 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
 
     private val TAG = this.javaClass.simpleName
 
-    private lateinit var adapter: AppAdapter
+    private lateinit var appAdapter: AppAdapter
     private val mData = mutableListOf<AppInfo>()
 
     private var type = TYPE_USER
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-        toolBar.title = ""
-        setSupportActionBar(toolBar)
-        val spinnerAdapter = ArrayAdapter.createFromResource(this,
-                R.array.options_main, android.R.layout.simple_spinner_dropdown_item)
-        spinner.adapter = spinnerAdapter
-        spinner.onItemSelectedListener = this
-        adapter = AppAdapter(this, mData)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        app_list.adapter = adapter
-        app_list.addItemDecoration(androidx.recyclerview.widget.DividerItemDecoration(this, RecyclerView.VERTICAL))
-        adapter.setOnItemClickListener(object : MultiItemTypeAdapter.OnItemClickListener {
-            override fun onItemLongClick(view: View?, holder: RecyclerView.ViewHolder?, position: Int): Boolean {
-                return false
-            }
+        binding.toolBar.title = ""
+        setSupportActionBar(binding.toolBar)
 
-            override fun onItemClick(view: View?, holder: RecyclerView.ViewHolder?, position: Int) {
-                deleteApp(mData[position].appPackage)
+        val spinnerAdapter = ArrayAdapter.createFromResource(
+            this,
+            R.array.options_main,
+            android.R.layout.simple_spinner_dropdown_item
+        )
+        binding.spinner.adapter = spinnerAdapter
+        binding.spinner.onItemSelectedListener = this
+
+        appAdapter = AppAdapter(mData)
+        binding.appList.adapter = appAdapter
+        binding.appList.addItemDecoration(DividerItemDecoration(this, RecyclerView.VERTICAL))
+        appAdapter.setOnItemClickListener(object : OnItemClickListener {
+            override fun onItemClick(view: View, position: Int) {
+                goToAppDetail(mData[position].appPackage)
             }
         })
-
-        pb.visibility = View.GONE
     }
 
     override fun onResume() {
@@ -73,11 +73,9 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
         return true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        if (item != null) {
-            when (item.itemId) {
-                R.id.i_refresh -> showApps()
-            }
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.i_refresh -> showApps()
         }
         return true
     }
@@ -93,12 +91,9 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
         Log.i(TAG, "$position")
     }
 
-    /**
-     * 显示所有的用户程序
-     */
     @SuppressLint("CheckResult")
     private fun showApps() {
-        pb.visibility = View.VISIBLE
+        binding.pb.visibility = View.VISIBLE
         Observable.fromCallable {
             val result = mutableListOf<AppInfo>()
             try {
@@ -118,7 +113,8 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
                 temp.forEach {
                     if (it.packageName != packageName) {
                         val myAppInfo = AppInfo()
-                        myAppInfo.appName = packageManager.getApplicationLabel(it.applicationInfo).toString()
+                        myAppInfo.appName =
+                            packageManager.getApplicationLabel(it.applicationInfo).toString()
                         myAppInfo.appPackage = it.packageName
                         myAppInfo.verName = it.versionName
                         myAppInfo.appIcon = it.applicationInfo.loadIcon(packageManager)
@@ -132,24 +128,22 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
             result.sortBy { it.appName }
             result
         }.subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({ t ->
-                    mData.clear()
-                    mData.addAll(t)
-                    adapter.notifyDataSetChanged()
-                    pb.visibility = View.INVISIBLE
-                }, { t ->
-                    t.printStackTrace()
-                    pb.visibility = View.INVISIBLE
-                })
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ t ->
+                mData.clear()
+                mData.addAll(t)
+                appAdapter.notifyDataSetChanged()
+                binding.pb.visibility = View.GONE
+            }, { t ->
+                t.printStackTrace()
+                binding.pb.visibility = View.GONE
+            })
     }
 
 
-    /**
-     * 删除程序
-     */
-    private fun deleteApp(packageName: String) {
-        try {//通过程序的包名创建URI
+    private fun goToAppDetail(packageName: String) {
+        try {
+            // 通过程序的包名创建URI
             val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
             intent.data = Uri.parse("package:$packageName")
             startActivity(intent)

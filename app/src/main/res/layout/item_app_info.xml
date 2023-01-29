@@ -13,7 +13,8 @@
         android:layout_height="45dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="ContentDescription" />
 
     <TextView
         android:id="@+id/tv_name"
@@ -46,6 +47,5 @@
         app:layout_constraintStart_toEndOf="@+id/iv_icon"
         app:layout_constraintTop_toBottomOf="@id/tv_package"
         tools:text="1.0" />
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

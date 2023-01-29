@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="options_main">
-        <item>用户程序</item>
-        <item>系统程序</item>
-        <item>全部程序</item>
+        <item>User</item>
+        <item>System</item>
+        <item>All</item>
     </string-array>
 </resources>
