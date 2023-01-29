@@ -39,7 +39,7 @@ android {
     }
     android.applicationVariants.all { variant ->
         variant.outputs.all {
-            outputFileName = "${applicationId}-${variant.name}-${variant.versionName}-${releaseTime()}.apk"
+            outputFileName = "${outputFileName.replace(".", "-v${variant.versionName}.")}"
         }
     }
 }
