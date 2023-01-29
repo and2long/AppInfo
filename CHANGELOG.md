@@ -1,4 +1,4 @@
-## 1.3.5
+## 1.3.6
 
 - Upgrade targetSdkVersion to 33.
 - Upgrade dependencies.
