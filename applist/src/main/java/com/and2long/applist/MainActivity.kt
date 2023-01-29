@@ -13,12 +13,14 @@ import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.RecyclerView
 import com.and2long.applist.databinding.ActivityMainBinding
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
@@ -46,9 +48,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
         setSupportActionBar(binding.toolBar)
 
         val spinnerAdapter = ArrayAdapter.createFromResource(
-            this,
-            R.array.options_main,
-            android.R.layout.simple_spinner_dropdown_item
+            this, R.array.options_main, android.R.layout.simple_spinner_dropdown_item
         )
         binding.spinner.adapter = spinnerAdapter
         binding.spinner.onItemSelectedListener = this
@@ -66,6 +66,11 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
     override fun onResume() {
         super.onResume()
         showApps()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        lifecycleScope.cancel()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -88,58 +93,52 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
     override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
         type = position
         showApps()
-        Log.i(TAG, "$position")
     }
 
-    @SuppressLint("CheckResult")
+    @SuppressLint("NotifyDataSetChanged")
     private fun showApps() {
         binding.pb.visibility = View.VISIBLE
-        Observable.fromCallable {
-            val result = mutableListOf<AppInfo>()
-            try {
-                val packageInfoList = packageManager.getInstalledPackages(0)
-                val temp = when (type) {
-                    TYPE_SYSTEM -> {
-                        packageInfoList.filter { (ApplicationInfo.FLAG_SYSTEM and it.applicationInfo.flags) != 0 }
+        lifecycleScope.launch {
+            val result = withContext(Dispatchers.IO) {
+                val result = mutableListOf<AppInfo>()
+                try {
+                    val packageInfoList = packageManager.getInstalledPackages(0)
+                    val temp = when (type) {
+                        TYPE_SYSTEM -> {
+                            packageInfoList.filter { (ApplicationInfo.FLAG_SYSTEM and it.applicationInfo.flags) != 0 }
+                        }
+                        TYPE_USER -> {
+                            packageInfoList.filter { (ApplicationInfo.FLAG_SYSTEM and it.applicationInfo.flags) == 0 }
+                        }
+                        else -> {
+                            packageInfoList
+                        }
                     }
-                    TYPE_USER -> {
-                        packageInfoList.filter { (ApplicationInfo.FLAG_SYSTEM and it.applicationInfo.flags) == 0 }
-                    }
-                    else -> {
-                        packageInfoList
-                    }
-                }
 
-                temp.forEach {
-                    if (it.packageName != packageName) {
-                        val myAppInfo = AppInfo()
-                        myAppInfo.appName =
-                            packageManager.getApplicationLabel(it.applicationInfo).toString()
-                        myAppInfo.appPackage = it.packageName
-                        myAppInfo.verName = it.versionName
-                        myAppInfo.appIcon = it.applicationInfo.loadIcon(packageManager)
-                        result.add(myAppInfo)
+                    temp.forEach {
+                        if (it.packageName != packageName) {
+                            val myAppInfo = AppInfo()
+                            myAppInfo.appName =
+                                packageManager.getApplicationLabel(it.applicationInfo).toString()
+                            myAppInfo.appPackage = it.packageName
+                            myAppInfo.verName = it.versionName
+                            myAppInfo.appIcon = it.applicationInfo.loadIcon(packageManager)
+                            result.add(myAppInfo)
+                        }
                     }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    Log.e(TAG, "获取应用包信息失败")
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                Log.e(TAG, "获取应用包信息失败")
+                result.sortBy { it.appName }
+                result
             }
-            result.sortBy { it.appName }
-            result
-        }.subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({ t ->
-                mData.clear()
-                mData.addAll(t)
-                appAdapter.notifyDataSetChanged()
-                binding.pb.visibility = View.GONE
-            }, { t ->
-                t.printStackTrace()
-                binding.pb.visibility = View.GONE
-            })
+            mData.clear()
+            mData.addAll(result)
+            appAdapter.notifyDataSetChanged()
+            binding.pb.visibility = View.GONE
+        }
     }
-
 
     private fun goToAppDetail(packageName: String) {
         try {
