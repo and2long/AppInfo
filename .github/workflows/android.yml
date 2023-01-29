@@ -28,4 +28,4 @@ jobs:
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/')
       with:
-        files: ./applist/build/outputs/apk/release/applist-release-v1.3.apk
+        files: ./applist/build/outputs/apk/release/applist-release-$GITHUB_REF_NAME.apk
