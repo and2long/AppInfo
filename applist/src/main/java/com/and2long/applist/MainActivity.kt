@@ -99,7 +99,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
     private fun showApps() {
         binding.pb.visibility = View.VISIBLE
         lifecycleScope.launch {
-            val result = withContext(Dispatchers.IO) {
+            val appInfoList = withContext(Dispatchers.IO) {
                 val result = mutableListOf<AppInfo>()
                 try {
                     val packageInfoList = packageManager.getInstalledPackages(0)
@@ -117,13 +117,13 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
 
                     temp.forEach {
                         if (it.packageName != packageName) {
-                            val myAppInfo = AppInfo()
-                            myAppInfo.appName =
+                            val appInfo = AppInfo()
+                            appInfo.appName =
                                 packageManager.getApplicationLabel(it.applicationInfo).toString()
-                            myAppInfo.appPackage = it.packageName
-                            myAppInfo.verName = it.versionName
-                            myAppInfo.appIcon = it.applicationInfo.loadIcon(packageManager)
-                            result.add(myAppInfo)
+                            appInfo.appPackage = it.packageName
+                            appInfo.verName = it.versionName
+                            appInfo.appIcon = it.applicationInfo.loadIcon(packageManager)
+                            result.add(appInfo)
                         }
                     }
                 } catch (e: Exception) {
@@ -134,7 +134,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
                 result
             }
             mData.clear()
-            mData.addAll(result)
+            mData.addAll(appInfoList)
             appAdapter.notifyDataSetChanged()
             binding.pb.visibility = View.GONE
         }
