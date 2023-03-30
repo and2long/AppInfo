@@ -12,6 +12,7 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -58,7 +59,21 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
         binding.appList.addItemDecoration(DividerItemDecoration(this, RecyclerView.VERTICAL))
         appAdapter.setOnItemClickListener(object : OnItemClickListener {
             override fun onItemClick(view: View, position: Int) {
-                goToAppDetail(mData[position].appPackage)
+                val appInfo = mData[position]
+                AlertDialog.Builder(this@MainActivity)
+                    .setIcon(appInfo.appIcon)
+                    .setTitle(appInfo.appName)
+                    .setMessage(appInfo.packageName + "\n" + appInfo.versionName)
+                    .setPositiveButton("OPEN") { dialog, _ ->
+                        dialog?.dismiss()
+                        startActivity(packageManager.getLaunchIntentForPackage(appInfo.packageName))
+                    }
+                    .setNegativeButton("DETAIL") { dialog, _ ->
+                        dialog?.dismiss()
+                        goToAppDetail(mData[position].packageName)
+                    }
+                    .setNeutralButton("CANCEL") { dialog, _ -> dialog?.dismiss() }
+                    .show()
             }
         })
     }
@@ -120,8 +135,8 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
                             val appInfo = AppInfo()
                             appInfo.appName =
                                 packageManager.getApplicationLabel(it.applicationInfo).toString()
-                            appInfo.appPackage = it.packageName
-                            appInfo.verName = it.versionName
+                            appInfo.packageName = it.packageName
+                            appInfo.versionName = it.versionName
                             appInfo.appIcon = it.applicationInfo.loadIcon(packageManager)
                             result.add(appInfo)
                         }

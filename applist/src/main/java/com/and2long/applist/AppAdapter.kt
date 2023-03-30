@@ -14,8 +14,8 @@ class AppAdapter(private val dataList: List<AppInfo>) :
             itemBinding.apply {
                 ivIcon.setImageDrawable(appInfo.appIcon)
                 tvName.text = appInfo.appName
-                tvPackage.text = appInfo.appPackage
-                tvVerName.text = appInfo.verName
+                tvPackage.text = appInfo.packageName
+                tvVerName.text = appInfo.versionName
             }
         }
     }

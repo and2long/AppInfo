@@ -4,8 +4,8 @@ import android.graphics.drawable.Drawable
 
 data class AppInfo(
     var appName: String = "",
-    var appPackage: String = "",
-    var verName: String = "",
+    var packageName: String = "",
+    var versionName: String = "",
     var appIcon: Drawable? = null
 )
 
