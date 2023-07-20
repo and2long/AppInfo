@@ -1,1 +1,1 @@
-- Show app detail dialog when item clicked.
+- Support for displaying versionCode.

@@ -6,6 +6,7 @@ data class AppInfo(
     var appName: String = "",
     var packageName: String = "",
     var versionName: String = "",
+    var versionCode: String = "",
     var appIcon: Drawable? = null
 )
 

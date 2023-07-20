@@ -63,7 +63,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
                 AlertDialog.Builder(this@MainActivity)
                     .setIcon(appInfo.appIcon)
                     .setTitle(appInfo.appName)
-                    .setMessage(appInfo.packageName + "\n" + appInfo.versionName)
+                    .setMessage("PackageName: " + appInfo.packageName + "\n\n" + "VersionName: " + appInfo.versionName + "\n\nVersionCode: " + appInfo.versionCode)
                     .setPositiveButton("OPEN") { dialog, _ ->
                         dialog?.dismiss()
                         startActivity(packageManager.getLaunchIntentForPackage(appInfo.packageName))
@@ -122,9 +122,11 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
                         TYPE_SYSTEM -> {
                             packageInfoList.filter { (ApplicationInfo.FLAG_SYSTEM and it.applicationInfo.flags) != 0 }
                         }
+
                         TYPE_USER -> {
                             packageInfoList.filter { (ApplicationInfo.FLAG_SYSTEM and it.applicationInfo.flags) == 0 }
                         }
+
                         else -> {
                             packageInfoList
                         }
@@ -137,6 +139,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
                                 packageManager.getApplicationLabel(it.applicationInfo).toString()
                             appInfo.packageName = it.packageName
                             appInfo.versionName = it.versionName
+                            appInfo.versionCode = it.versionCode.toString()
                             appInfo.appIcon = it.applicationInfo.loadIcon(packageManager)
                             result.add(appInfo)
                         }
